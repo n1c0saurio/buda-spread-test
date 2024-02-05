@@ -3,10 +3,10 @@
 import requests
 
 BASE_URL = "https://www.buda.com/api"
-VERSION = "/v3"
+VERSION = "/v2"
 
 
-def fetch_data(endpoint: str) -> dict | list:
+def fetch_data(endpoint: str) -> dict:
     """
     Get data from Buda API.
 
@@ -17,8 +17,8 @@ def fetch_data(endpoint: str) -> dict | list:
 
     Return
     ------
-    dict | list
-        Either a dictionary or a list of dictionaries with the response data.
+    dict
+        A dictionary with the response data.
     """
     url = f"{BASE_URL}{VERSION}{endpoint}"
     response = requests.get(url)
