@@ -81,7 +81,7 @@ class Spread(models.Model):
 
         # assign the values to its corresponding attributes...
         self.market_id = ticker.market_id
-        self.value = ticker.min_ask_value - ticker.max_bid_currency
+        self.value = ticker.min_ask_value - ticker.max_bid_value
         self.currency = ticker.max_bid_currency
 
     @classmethod
