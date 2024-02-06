@@ -162,3 +162,4 @@ cython_debug/
 # Docker stuff
 docker-compose.yml
 DockerFile
+postgres # db persistent storage directory
