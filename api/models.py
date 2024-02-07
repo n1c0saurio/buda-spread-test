@@ -3,6 +3,77 @@ from .buda_utils import fetch_data
 from decimal import Decimal
 
 
+class Market(models.Model):
+    """
+    `Market` object that stores all data returned from `/markets/{market_id}`
+
+    To initialize you must provide one of these arguments: a `market_id` to
+    retrieve the data directly from Buda.com API, or a dictionary already
+    populated with the required data. If you provide both, the dictionary
+    takes precedence.
+
+    :param market_id: valid market identifier, e.g. `btc-clp`
+    :param market: dictionary with all required data to initialize the object
+    """
+
+    id = models.CharField(max_length=30, primary_key=True)
+    name = models.CharField(max_length=30)
+    base_currency = models.CharField(max_length=15)
+    quote_currency = models.CharField(max_length=15)
+    max_orders_per_minute = models.PositiveSmallIntegerField()
+
+    # Minumum order amount accepted.
+    min_order_amount_value = models.DecimalField(
+        max_digits=22, decimal_places=10
+    )  # noqa: E501
+    min_order_amount_currency = models.CharField(max_length=15)
+
+    # Fees and discounts for takers and makers orders
+    taker_fee = models.DecimalField(max_digits=22, decimal_places=10)
+    taker_discount_percentage = models.DecimalField(
+        max_digits=22, decimal_places=10
+    )  # noqa: E501
+    maker_fee = models.DecimalField(max_digits=22, decimal_places=10)
+    maker_discount_percentage = models.DecimalField(
+        max_digits=22, decimal_places=10
+    )  # noqa: E501
+
+    def __init__(self, market_id: str = "", market: dict = {}):
+
+        if not market:
+            # retrieve data for the given market
+            # and asign it to the market dict
+            endpoint = f"/markets/{market_id}"
+            market = fetch_data(endpoint)["market"]
+
+        # assign to its corresponding attributes
+        self.id = market["id"]
+        self.name = market["name"]
+        self.base_currency = market["base_currency"]
+        self.quote_currency = market["quote_currency"]
+        self.max_orders_per_minute = int(market["max_orders_per_minute"])
+
+        # The API return this as an array, where the first element
+        # is the amount and the second is the currency code.
+        # We save each value separately for easy managment.
+        self.min_order_amount_value = Decimal(
+            market["minimum_order_amount"][0]
+        )  # noqa: E501
+        self.min_order_amount_currency = market["minimum_order_amount"][1]
+
+        self.taker_fee = Decimal(market["taker_fee"])
+        self.taker_discount_percentage = Decimal(
+            market["taker_discount_percentage"]
+        )  # noqa: E501
+        self.maker_fee = Decimal(market["maker_fee"])
+        self.maker_discount_percentage = Decimal(
+            market["maker_discount_percentage"]
+        )  # noqa: E501
+
+    class Meta:
+        managed = False
+
+
 class Ticker(models.Model):
     """
     `Ticker` object that stores all data returned from
