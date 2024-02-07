@@ -70,6 +70,22 @@ class Market(models.Model):
             market["maker_discount_percentage"]
         )  # noqa: E501
 
+    @classmethod
+    def get_all_markets(cls):
+        """
+        Retrieves a list with all markets from Buda.com API
+
+        :return: A list of `Market` objects
+        """
+        endpoint = "/markets"
+        markets = []
+        markets_data = fetch_data(endpoint)["markets"]
+
+        for market_data in markets_data:
+            markets.append(cls("", market_data))
+
+        return markets
+
     class Meta:
         managed = False
 
