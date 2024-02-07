@@ -42,3 +42,8 @@ class TestModels(TestSetUp):
         spread = Spread(self.valid_market_id)
         self.assertEqual(spread.market_id, self.valid_market_id)
         self.assertTrue(isinstance(spread.value, Decimal))
+
+    def test_get_each_markets_spread(self):
+        spreads = Spread.get_each_markets_spread()
+        self.assertTrue(isinstance(spreads, list))
+        self.assertTrue(isinstance(choice(spreads), Spread))
