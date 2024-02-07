@@ -172,5 +172,9 @@ class Spread(models.Model):
         self.currency = ticker.max_bid_currency
 
     @classmethod
-    def get_all_markets_spread(cls) -> list:
-        pass
+    def get_each_markets_spread(cls) -> list:
+        spreads = []
+        markets = Market.get_all_markets()
+        for market in markets:
+            spreads.append(Spread(market.id))
+        return spreads
