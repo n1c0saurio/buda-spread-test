@@ -31,7 +31,7 @@ class TestModels(TestSetUp):
         """
         Valid `Ticker` object creation
         """
-        ticker = Ticker(self.valid_market_id)
+        ticker = Ticker.create(self.valid_market_id)
         self.assertEqual(ticker.volume_currency, self.valid_base_currency)
         self.assertEqual(ticker.last_price_currency, self.valid_quote_currency)
 

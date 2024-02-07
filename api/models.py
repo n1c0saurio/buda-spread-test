@@ -126,28 +126,30 @@ class Ticker(models.Model):
 
     fetch_date = models.DateTimeField(auto_now_add=True)
 
-    def __init__(self, market_id: str):
+    @classmethod
+    def create(cls, market_id: str):
         # retrieve the ticket for the specific market
         endpoint = f"/markets/{market_id}/ticker"
-        ticker = fetch_data(endpoint)["ticker"]  # TODO: ?
+        ticker_data = fetch_data(endpoint)["ticker"]  # TODO: ?
 
-        # assign the values to its corresponding attributes...
-
-        self.market_id = ticker["market_id"]
-        self.price_variation_24h = Decimal(ticker["price_variation_24h"])
-        self.price_variation_7d = Decimal(ticker["price_variation_7d"])
-
-        # The API return all figures as an array, where the first
-        # element is the amount and the second is the currency code.
-        # We save each value separately for easy managment.
-        self.last_price_value = Decimal(ticker["last_price"][0])
-        self.last_price_currency = ticker["last_price"][1]
-        self.max_bid_value = Decimal(ticker["max_bid"][0])
-        self.max_bid_currency = ticker["max_bid"][1]
-        self.min_ask_value = Decimal(ticker["min_ask"][0])
-        self.min_ask_currency = ticker["min_ask"][1]
-        self.volume_value = Decimal(ticker["volume"][0])
-        self.volume_currency = ticker["volume"][1]
+        # create the instance
+        ticker = cls(
+            market_id=ticker_data["market_id"],
+            price_variation_24h=Decimal(ticker_data["price_variation_24h"]),
+            price_variation_7d=Decimal(ticker_data["price_variation_7d"]),
+            # The API return all figures as an array, where the first
+            # element is the amount and the second is the currency code.
+            # We save each value separately for easy managment.
+            last_price_value=Decimal(ticker_data["last_price"][0]),
+            last_price_currency=ticker_data["last_price"][1],
+            max_bid_value=Decimal(ticker_data["max_bid"][0]),
+            max_bid_currency=ticker_data["max_bid"][1],
+            min_ask_value=Decimal(ticker_data["min_ask"][0]),
+            min_ask_currency=ticker_data["min_ask"][1],
+            volume_value=Decimal(ticker_data["volume"][0]),
+            volume_currency=ticker_data["volume"][1],
+        )
+        return ticker
 
     class Meta:
         managed = False
@@ -168,7 +170,7 @@ class Spread(models.Model):
 
     def __init__(self, market_id: str):
         # get the ticker for the given market
-        ticker = Ticker(market_id)
+        ticker = Ticker.create(market_id)
 
         # assign the values to its corresponding attributes...
         self.market_id = ticker.market_id
