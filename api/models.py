@@ -28,47 +28,51 @@ class Market(models.Model):
     )  # noqa: E501
     min_order_amount_currency = models.CharField(max_length=15)
 
-    # Fees and discounts for takers and makers orders
+    # Fees and discounts for takers orders
     taker_fee = models.DecimalField(max_digits=22, decimal_places=10)
     taker_discount_percentage = models.DecimalField(
         max_digits=22, decimal_places=10
     )  # noqa: E501
+
+    # Fees and discounts for makers orders
     maker_fee = models.DecimalField(max_digits=22, decimal_places=10)
     maker_discount_percentage = models.DecimalField(
         max_digits=22, decimal_places=10
     )  # noqa: E501
 
-    def __init__(self, market_id: str = "", market: dict = {}):
+    @classmethod
+    def create(cls, market_id: str = "", market_data: dict = {}):
 
-        if not market:
+        if not market_data:
             # retrieve data for the given market
-            # and asign it to the market dict
+            # and asign it to the dict
             endpoint = f"/markets/{market_id}"
-            market = fetch_data(endpoint)["market"]
+            market_data = fetch_data(endpoint)["market"]
 
-        # assign to its corresponding attributes
-        self.id = market["id"]
-        self.name = market["name"]
-        self.base_currency = market["base_currency"]
-        self.quote_currency = market["quote_currency"]
-        self.max_orders_per_minute = int(market["max_orders_per_minute"])
-
-        # The API return this as an array, where the first element
-        # is the amount and the second is the currency code.
-        # We save each value separately for easy managment.
-        self.min_order_amount_value = Decimal(
-            market["minimum_order_amount"][0]
-        )  # noqa: E501
-        self.min_order_amount_currency = market["minimum_order_amount"][1]
-
-        self.taker_fee = Decimal(market["taker_fee"])
-        self.taker_discount_percentage = Decimal(
-            market["taker_discount_percentage"]
-        )  # noqa: E501
-        self.maker_fee = Decimal(market["maker_fee"])
-        self.maker_discount_percentage = Decimal(
-            market["maker_discount_percentage"]
-        )  # noqa: E501
+        # create the instance
+        market = cls(
+            id=market_data["id"],
+            name=market_data["name"],
+            base_currency=market_data["base_currency"],
+            quote_currency=market_data["quote_currency"],
+            max_orders_per_minute=int(market_data["max_orders_per_minute"]),
+            # The API return this as an array, where the first element
+            # is the amount and the second is the currency code.
+            # We save each value separately for easy managment.
+            min_order_amount_value=Decimal(
+                market_data["minimum_order_amount"][0]
+            ),  # noqa: E501
+            min_order_amount_currency=market_data["minimum_order_amount"][1],
+            taker_fee=Decimal(market_data["taker_fee"]),
+            taker_discount_percentage=Decimal(
+                market_data["taker_discount_percentage"]
+            ),  # noqa: E501
+            maker_fee=Decimal(market_data["maker_fee"]),
+            maker_discount_percentage=Decimal(
+                market_data["maker_discount_percentage"]
+            ),  # noqa: E501
+        )
+        return market
 
     @classmethod
     def get_all_markets(cls):
@@ -82,7 +86,7 @@ class Market(models.Model):
         markets_data = fetch_data(endpoint)["markets"]
 
         for market_data in markets_data:
-            markets.append(cls("", market_data))
+            markets.append(cls.create("", market_data))
 
         return markets
 

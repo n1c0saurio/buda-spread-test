@@ -13,7 +13,7 @@ class TestModels(TestSetUp):
         """
         Valid `Market` object creation
         """
-        market = Market(self.valid_market_id)
+        market = Market.create(self.valid_market_id)
         self.assertEqual(market.id, self.valid_market_id)
         self.assertEqual(market.base_currency, self.valid_base_currency)
         self.assertEqual(market.quote_currency, self.valid_quote_currency)
