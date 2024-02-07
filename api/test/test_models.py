@@ -1,6 +1,7 @@
 from .test_setup import TestSetUp
 from ..models import Market, Ticker, Spread
 from decimal import Decimal
+from random import choice
 
 
 class TestModels(TestSetUp):
@@ -17,6 +18,14 @@ class TestModels(TestSetUp):
         self.assertEqual(market.base_currency, self.valid_base_currency)
         self.assertEqual(market.quote_currency, self.valid_quote_currency)
         self.assertTrue(isinstance(market.min_order_amount_value, Decimal))
+
+    def test_retrieve_all_markets(self):
+        """
+        Valid markets retrieving
+        """
+        markets = Market.get_all_markets()
+        self.assertTrue(isinstance(markets, list))
+        self.assertTrue(isinstance(choice(markets), Market))
 
     def test_create_valid_ticker(self):
         """
