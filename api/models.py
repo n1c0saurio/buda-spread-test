@@ -188,3 +188,77 @@ class Spread(models.Model):
         for market in markets:
             spreads.append(Spread.create(market.id))
         return spreads
+
+
+class Polling(models.Model):
+    """
+    `Polling` object to compare the current spread with a given one.
+
+    To initialize:
+    :param stored: a `Spread` object to compare with the current spread
+    """
+
+    market_id = models.CharField(max_length=30)
+
+    # current spread data
+    current_spread_value = models.DecimalField(
+        max_digits=22, decimal_places=10
+    )  # noqa: E501
+    current_spread_currency = models.CharField(max_length=15)
+
+    # stored spread data
+    stored_spread_value = models.DecimalField(
+        max_digits=22, decimal_places=10
+    )  # noqa: E501
+    stored_spread_currency = models.CharField(max_length=15)
+    stored_spread_date = models.DateTimeField()
+
+    result = models.CharField(max_length=50)
+    is_greater = models.BooleanField()
+    is_smaller = models.BooleanField()
+    are_equals = models.BooleanField()
+    fetch_date = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    def create(cls, stored: Spread):
+        # retrieve the current spread for the same market of the given one
+        current = Spread.create(stored.market_id)
+
+        # create the instance
+        polling = cls(
+            market_id=current.market_id,
+            current_spread_value=current.value,
+            current_spread_currency=current.currency,
+            stored_spread_value=stored.value,
+            stored_spread_currency=stored.currency,
+            stored_spread_date=stored.fetch_date,
+            is_greater=True if current.value > stored.value else False,
+            is_smaller=True if current.value < stored.value else False,
+            are_equals=True if current.value == stored.value else False,
+        )
+        polling.result_translator()
+        return polling
+
+    def result_translator(self):
+        """
+        Return a message depending on the result of the comparison.
+        """
+        if self.is_greater:
+            self.result = (
+                "Current spread is greater than the stored one for "
+                + str(self.current_spread_value - self.stored_spread_value)
+                + " "
+                + self.current_spread_currency
+            )
+        elif self.is_smaller:
+            self.result = (
+                "Current spread is smaller than the stored one for "
+                + str(self.stored_spread_value - self.current_spread_value)
+                + " "
+                + self.current_spread_currency
+            )
+        elif self.are_equals:
+            self.result = "Both spread are equals"
+
+    class Meta:
+        managed = False
