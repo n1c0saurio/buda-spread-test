@@ -19,7 +19,7 @@ class SpreadViewSet(viewsets.ViewSet):
 
     @action(detail=True)
     def save(self, request, pk=None):
-        spread = Spread(pk)
+        spread = Spread.create(pk)
         spread.save()
         serializer = SpreadSerializer(spread)
         return Response(serializer.data, status.HTTP_201_CREATED)
