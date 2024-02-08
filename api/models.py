@@ -168,19 +168,23 @@ class Spread(models.Model):
     currency = models.CharField(max_length=15)
     fetch_date = models.DateTimeField(auto_now_add=True)
 
-    def __init__(self, market_id: str):
+    @classmethod
+    def create(cls, market_id: str):
         # get the ticker for the given market
         ticker = Ticker.create(market_id)
 
-        # assign the values to its corresponding attributes...
-        self.market_id = ticker.market_id
-        self.value = ticker.min_ask_value - ticker.max_bid_value
-        self.currency = ticker.max_bid_currency
+        # create the instance
+        spread = cls(
+            market_id=ticker.market_id,
+            value=ticker.min_ask_value - ticker.max_bid_value,
+            currency=ticker.max_bid_currency,
+        )
+        return spread
 
     @classmethod
     def get_each_markets_spread(cls) -> list:
         spreads = []
         markets = Market.get_all_markets()
         for market in markets:
-            spreads.append(Spread(market.id))
+            spreads.append(Spread.create(market.id))
         return spreads

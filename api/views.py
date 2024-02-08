@@ -12,6 +12,6 @@ class SpreadViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        spread = Spread(pk)
+        spread = Spread.create(pk)
         serializer = SpreadSerializer(spread)
         return Response(serializer.data)

@@ -39,7 +39,7 @@ class TestModels(TestSetUp):
         """
         Valid `Spread` object creation
         """
-        spread = Spread(self.valid_market_id)
+        spread = Spread.create(self.valid_market_id)
         self.assertEqual(spread.market_id, self.valid_market_id)
         self.assertTrue(isinstance(spread.value, Decimal))
 
