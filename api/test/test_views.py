@@ -41,3 +41,28 @@ class TestViews(TestSetUp):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(spread_saved)
+
+    def test_get_polling_before_saving_a_spread(self):
+        """
+        Validate polling request when no spread where previously stored.
+        """
+        url = reverse("spread-polling", kwargs={"pk": self.valid_market_id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_polling_after_saving_a_spread(self):
+        """
+        Validate polling request with a spread stored.
+        """
+        save_spread_url = reverse(
+            "spread-save", kwargs={"pk": self.valid_market_id}
+        )  # noqa: E501
+        self.client.get(save_spread_url)
+
+        polling_url = reverse(
+            "spread-polling", kwargs={"pk": self.valid_market_id}
+        )  # noqa: E501
+        polling_response = self.client.get(polling_url)
+
+        self.assertEqual(polling_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(polling_response["content-type"], "application/json")

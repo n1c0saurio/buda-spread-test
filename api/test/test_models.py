@@ -1,5 +1,5 @@
 from .test_setup import TestSetUp
-from ..models import Market, Ticker, Spread
+from ..models import Market, Ticker, Spread, Polling
 from decimal import Decimal
 from random import choice
 
@@ -47,3 +47,13 @@ class TestModels(TestSetUp):
         spreads = Spread.get_each_markets_spread()
         self.assertTrue(isinstance(spreads, list))
         self.assertTrue(isinstance(choice(spreads), Spread))
+
+    def test_create_valid_polling(self):
+        spread = Spread.create(self.valid_market_id)
+        polling = Polling.create(spread)
+
+        self.assertTrue(isinstance(polling, Polling))
+        self.assertEqual(polling.market_id, self.valid_market_id)
+        self.assertTrue(
+            polling.is_greater or polling.is_smaller or polling.are_equals
+        )  # noqa: E501
