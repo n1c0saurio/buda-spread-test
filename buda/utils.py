@@ -20,6 +20,10 @@ def fetch_data(endpoint: str) -> dict:
     dict
         A dictionary with the response data.
     """
-    url = f"{BASE_URL}{VERSION}{endpoint}"
+    url = BASE_URL + VERSION + endpoint
     response = requests.get(url)
+
+    # throw an HTTPError if the request wasn't succesful
+    response.raise_for_status()
+
     return response.json()

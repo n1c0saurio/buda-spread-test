@@ -1,5 +1,5 @@
 from django.db import models
-from .buda_utils import fetch_data
+from buda.utils import fetch_data
 from decimal import Decimal
 
 
