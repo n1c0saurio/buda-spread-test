@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Spread, Polling
+from decimal import Decimal
 
 
 class SpreadSerializer(serializers.ModelSerializer):
@@ -29,10 +30,10 @@ class PollingSerializer(serializers.ModelSerializer):
     current_spread = serializers.SerializerMethodField()
     stored_spread = serializers.SerializerMethodField()
 
-    def get_current_spread(self, polling) -> list:
+    def get_current_spread(self, polling) -> tuple[Decimal, str]:
         return [polling.current_spread_value, polling.current_spread_currency]
 
-    def get_stored_spread(self, polling) -> list:
+    def get_stored_spread(self, polling) -> tuple[Decimal, str]:
         return [polling.stored_spread_value, polling.stored_spread_currency]
 
     class Meta:
