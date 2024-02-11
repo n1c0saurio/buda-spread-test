@@ -7,7 +7,7 @@ from ..models import Spread
 
 class TestViews(TestSetUp):
     """
-    Tests for `/spreads/` endpoint.
+    Tests for `/spreads/*` endpoints.
     """
 
     def test_get_each_markets_spread(self):
@@ -23,7 +23,10 @@ class TestViews(TestSetUp):
         """
         Validate correct spread retrieving.
         """
-        url = reverse("spread-detail", kwargs={"pk": self.valid_market_id})
+        url = reverse(
+            "spread-detail",
+            kwargs={"market_id": self.valid_market_id},
+        )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["content-type"], "application/json")
@@ -32,7 +35,10 @@ class TestViews(TestSetUp):
         """
         Validate if a spread is saved on database
         """
-        url = reverse("spread-save", kwargs={"pk": self.valid_market_id})
+        url = reverse(
+            "spread-save",
+            kwargs={"market_id": self.valid_market_id},
+        )
         response = self.client.get(url)
 
         # find a spread with the same value as the response data
@@ -44,9 +50,12 @@ class TestViews(TestSetUp):
 
     def test_get_polling_before_saving_a_spread(self):
         """
-        Validate polling request when no spread where previously stored.
+        Validate polling request without spreads stored.
         """
-        url = reverse("spread-polling", kwargs={"pk": self.valid_market_id})
+        url = reverse(
+            "spread-polling",
+            kwargs={"market_id": self.valid_market_id},
+        )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -55,13 +64,15 @@ class TestViews(TestSetUp):
         Validate polling request with a spread stored.
         """
         save_spread_url = reverse(
-            "spread-save", kwargs={"pk": self.valid_market_id}
-        )  # noqa: E501
+            "spread-save",
+            kwargs={"market_id": self.valid_market_id},
+        )
         self.client.get(save_spread_url)
 
         polling_url = reverse(
-            "spread-polling", kwargs={"pk": self.valid_market_id}
-        )  # noqa: E501
+            "spread-polling",
+            kwargs={"market_id": self.valid_market_id},
+        )
         polling_response = self.client.get(polling_url)
 
         self.assertEqual(polling_response.status_code, status.HTTP_200_OK)
