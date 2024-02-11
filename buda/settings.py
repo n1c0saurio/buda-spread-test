@@ -38,7 +38,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # extra modules
     "rest_framework",
+    "drf_spectacular",
+    # custom apps
     "api",
 ]
 
@@ -69,6 +72,17 @@ TEMPLATES = [
         },
     },
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Spread API",
+    "DESCRIPTION": "API documentation for Buda Spread API.",
+    "VERSION": "0.1.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
 
 WSGI_APPLICATION = "buda.wsgi.application"
 
