@@ -55,5 +55,7 @@ class TestModels(TestSetUp):
         self.assertTrue(isinstance(polling, Polling))
         self.assertEqual(polling.market_id, self.valid_market_id)
         self.assertTrue(
-            polling.is_greater or polling.is_smaller or polling.are_equals
-        )  # noqa: E501
+            polling.difference == 0
+            or polling.current_is_greater
+            or polling.stored_is_greater
+        )

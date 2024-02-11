@@ -40,8 +40,10 @@ class PollingSerializer(serializers.ModelSerializer):
         model = Polling
         fields = [
             "market_id",
+            "current_is_greater",
+            "stored_is_greater",
+            "difference",
             "current_spread",
             "stored_spread",
-            "result",
             "stored_spread_date",
         ]
