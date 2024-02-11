@@ -1,0 +1,234 @@
+openapi: 3.0.3
+info:
+  title: Spread API
+  version: 0.1.0
+  description: API documentation for Buda Spread API.
+paths:
+  /api/v0.1/spreads/:
+    get:
+      operationId: v0.1_spreads_list
+      description: Calculate and return the current spread for all available markets.
+      summary: Get spreads for all markets
+      tags:
+      - v0.1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Spread'
+              examples:
+                Example1:
+                  value:
+                  - market_id: ETH-CLP
+                    value: 21278.0
+                    currency: CLP
+                  summary: List of spread objects
+          description: ''
+  /api/v0.1/spreads/{market_id}/:
+    get:
+      operationId: v0.1_spreads_retrieve
+      description: Calculate and return the current spread for the specified market.
+      summary: Get a spread
+      parameters:
+      - in: path
+        name: market_id
+        schema:
+          type: string
+        description: ID of the market to calculate the spread from
+        required: true
+        examples:
+          Example1:
+            value: BTC-CLP
+            summary: Valid market ID
+      tags:
+      - v0.1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spread'
+              examples:
+                Example1:
+                  value:
+                    market_id: BTC-CLP
+                    value: 481795.0
+                    currency: CLP
+                  summary: Spread object
+          description: ''
+  /api/v0.1/spreads/{market_id}/polling/:
+    get:
+      operationId: v0.1_spreads_polling_retrieve
+      description: |-
+        Return a comparison between the current spread vs.
+        the latest stored one for the specified market.
+      summary: Compare spreads
+      parameters:
+      - in: path
+        name: market_id
+        schema:
+          type: string
+        description: ID of the market to compare the spread data from
+        required: true
+        examples:
+          Example1:
+            value: BTC-CLP
+            summary: Valid market ID
+      tags:
+      - v0.1
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Polling'
+              examples:
+                Example1:
+                  value:
+                    market_id: BTC-CLP
+                    current_is_greater: true
+                    stored_is_greater: false
+                    difference: 303395
+                    current_spread:
+                    - 410110.0
+                    - CLP
+                    stored_spread:
+                    - 106715.0
+                    - CLP
+                    stored_spread_date: '2019-08-24T14:15:22Z'
+                  summary: Polling object
+          description: ''
+  /api/v0.1/spreads/{market_id}/save/:
+    get:
+      operationId: v0.1_spreads_save_retrieve
+      description: Save the current spread for the specified market.
+      summary: Save a spread
+      parameters:
+      - in: path
+        name: market_id
+        schema:
+          type: string
+        description: ID of the market to save the spread from
+        required: true
+        examples:
+          Example1:
+            value: BTC-CLP
+            summary: Valid market ID
+      tags:
+      - v0.1
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpreadSerializerFull'
+              examples:
+                Example1:
+                  value:
+                    id: 13
+                    market_id: BTC-CLP
+                    value: 481795.0
+                    currency: CLP
+                    fetch_date: '2019-08-24T14:15:22Z'
+                  summary: The full spread object stored in database
+          description: ''
+components:
+  schemas:
+    Polling:
+      type: object
+      description: Serializer for `Polling` model
+      properties:
+        market_id:
+          type: string
+          maxLength: 30
+        current_is_greater:
+          type: boolean
+        stored_is_greater:
+          type: boolean
+        difference:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,10})?$
+        current_spread:
+          type: array
+          items:
+            type: number
+            format: double
+          minLength: 2
+          maxLength: 2
+          readOnly: true
+        stored_spread:
+          type: array
+          items:
+            type: number
+            format: double
+          minLength: 2
+          maxLength: 2
+          readOnly: true
+        stored_spread_date:
+          type: string
+          format: date-time
+      required:
+      - current_is_greater
+      - current_spread
+      - difference
+      - market_id
+      - stored_is_greater
+      - stored_spread
+      - stored_spread_date
+    Spread:
+      type: object
+      description: Serializer for `Spread` model
+      properties:
+        market_id:
+          type: string
+          maxLength: 30
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,10})?$
+        currency:
+          type: string
+          maxLength: 15
+      required:
+      - currency
+      - market_id
+      - value
+    SpreadSerializerFull:
+      type: object
+      description: Serializer for all `Spread` model attributes
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        market_id:
+          type: string
+          maxLength: 30
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,10})?$
+        currency:
+          type: string
+          maxLength: 15
+        fetch_date:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - currency
+      - fetch_date
+      - id
+      - market_id
+      - value
