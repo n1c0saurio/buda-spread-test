@@ -1,6 +1,8 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from requests.exceptions import HTTPError
+from django.db import DatabaseError
 from .models import Spread, Polling
 from .serializer import (
     SpreadSerializer,
@@ -44,9 +46,14 @@ class SpreadViewSet(viewsets.ViewSet):
         """
         Calculate and return the current spread for all available markets.
         """
-
-        spreads = Spread.get_each_markets_spread()
-        serializer = SpreadSerializer(spreads, many=True)
+        try:
+            spreads = Spread.get_each_markets_spread()
+            serializer = SpreadSerializer(spreads, many=True)
+        except HTTPError as e:
+            return Response(
+                {"message": "Can't retrieve the data to calculate the spread"},
+                e.response.status_code,
+            )
         return Response(serializer.data)
 
     @extend_schema(
@@ -84,8 +91,14 @@ class SpreadViewSet(viewsets.ViewSet):
         """
         Calculate and return the current spread for the specified market.
         """
-        spread = Spread.create(market_id)
-        serializer = SpreadSerializer(spread)
+        try:
+            spread = Spread.create(market_id)
+            serializer = SpreadSerializer(spread)
+        except HTTPError as e:
+            return Response(
+                {"message": "Can't retrieve the data to calculate the spread"},
+                e.response.status_code,
+            )
         return Response(serializer.data)
 
     @extend_schema(
@@ -126,9 +139,20 @@ class SpreadViewSet(viewsets.ViewSet):
         """
         Save the current spread for the specified market.
         """
-        spread = Spread.create(market_id)
-        spread.save()
-        serializer = SpreadSerializerFull(spread)
+        try:
+            spread = Spread.create(market_id)
+            spread.save()
+            serializer = SpreadSerializerFull(spread)
+        except HTTPError as e:
+            return Response(
+                {"message": "Can't retrieve the data to calculate the spread"},
+                e.response.status_code,
+            )
+        except DatabaseError:
+            return Response(
+                {"message": "Can't save the spread on database"},
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         return Response(serializer.data, status.HTTP_201_CREATED)
 
     @extend_schema(
