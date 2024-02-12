@@ -2,7 +2,7 @@
 
 Buda.com coding test, that consist on create an API that calculate the spread of all cryptocurrency markets available through the [Buda API](https://api.buda.com/#la-api-de-buda-com), also allowing to save a spread of a specific market to compare it later with the current one.
 
-This API was developed in Django, with Django Rest Framework and DRF Spectacular for the documentation, using a PostgreSQL database for persistence. You can recreate the develop environment by cloning this repository, creating a `.env` file in the root directory, containing all the environment variables used in the `compose.yml` already included, and then running it.
+This API was developed in Django, with Django Rest Framework and DRF Spectacular for the documentation, using a PostgreSQL database for persistence. You can recreate the developer environment by cloning this repository, creating a `.env` file in the root directory, containing all the environment variables used in the `compose.yml` already included, and then running it with `docker-compose up`.
 
 The environment variables that needs to be set are the following ones:
 
@@ -13,6 +13,12 @@ The environment variables that needs to be set are the following ones:
 -   `DB_USER`
 -   `DB_PASSWORD`
 -   `DB_EXPOSED`
+
+To start the API on `http://localhost:8000/`, run this command inside the `app` container:
+
+```sh
+$: ./manage.py migrate && ./manage.py runserver 0.0.0.0:8000
+```
 
 <!-- Alternatively, you can run this proyect directly through the image [available on Docker Hub](), using this `compose.yml` as a base:
 
