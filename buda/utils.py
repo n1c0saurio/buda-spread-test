@@ -10,15 +10,9 @@ def fetch_data(endpoint: str) -> dict:
     """
     Get data from Buda API.
 
-    Parameter
-    ---------
-    endpoint : str
-        Valid endpoint to retrieve data from.
-
-    Return
-    ------
-    dict
-        A dictionary with the response data.
+    :param str endpoint: valid endpoint to retrieve data from.
+    :returns: A dictionary with the response data.
+    :rtype: dict
     """
     url = BASE_URL + VERSION + endpoint
     response = requests.get(url)

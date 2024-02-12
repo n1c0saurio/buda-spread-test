@@ -5,15 +5,17 @@ from decimal import Decimal
 
 class Market(models.Model):
     """
-    `Market` object that stores all data returned from `/markets/{market_id}`
+    A class that stores all data returned from `/markets/{market_id}`
+    Buda.com API endpoint.
 
     To initialize you must provide one of these arguments: a `market_id` to
     retrieve the data directly from Buda.com API, or a dictionary already
     populated with the required data. If you provide both, the dictionary
     takes precedence.
 
-    :param market_id: valid market identifier, e.g. `btc-clp`
-    :param market: dictionary with all required data to initialize the object
+    USAGE:
+    >>> market = Market(market_id: str)
+    >>> market = Market("", market_data: dict)
     """
 
     id = models.CharField(max_length=30, primary_key=True)
@@ -23,25 +25,42 @@ class Market(models.Model):
     max_orders_per_minute = models.PositiveSmallIntegerField()
 
     # Minumum order amount accepted.
-    min_order_amount_value = models.DecimalField(
-        max_digits=22, decimal_places=10
-    )  # noqa: E501
     min_order_amount_currency = models.CharField(max_length=15)
+    min_order_amount_value = models.DecimalField(
+        max_digits=22,
+        decimal_places=10,
+    )
 
     # Fees and discounts for takers orders
-    taker_fee = models.DecimalField(max_digits=22, decimal_places=10)
+    taker_fee = models.DecimalField(
+        max_digits=22,
+        decimal_places=10,
+    )
     taker_discount_percentage = models.DecimalField(
-        max_digits=22, decimal_places=10
-    )  # noqa: E501
+        max_digits=22,
+        decimal_places=10,
+    )
 
     # Fees and discounts for makers orders
-    maker_fee = models.DecimalField(max_digits=22, decimal_places=10)
+    maker_fee = models.DecimalField(
+        max_digits=22,
+        decimal_places=10,
+    )
     maker_discount_percentage = models.DecimalField(
-        max_digits=22, decimal_places=10
-    )  # noqa: E501
+        max_digits=22,
+        decimal_places=10,
+    )
 
     @classmethod
     def create(cls, market_id: str = "", market_data: dict = {}):
+        """
+        Custom method to initialize a :class:`Market` instance.
+
+        :param str market_id: valid market identifier, e.g. `btc-clp`.
+        :param dict market_data: already populated with all required
+        data to initialize the object.
+        :rtype: Market
+        """
 
         if not market_data:
             # retrieve data for the given market
@@ -60,26 +79,27 @@ class Market(models.Model):
             # is the amount and the second is the currency code.
             # We save each value separately for easy managment.
             min_order_amount_value=Decimal(
-                market_data["minimum_order_amount"][0]
-            ),  # noqa: E501
+                market_data["minimum_order_amount"][0],
+            ),
             min_order_amount_currency=market_data["minimum_order_amount"][1],
             taker_fee=Decimal(market_data["taker_fee"]),
             taker_discount_percentage=Decimal(
-                market_data["taker_discount_percentage"]
-            ),  # noqa: E501
+                market_data["taker_discount_percentage"],
+            ),
             maker_fee=Decimal(market_data["maker_fee"]),
             maker_discount_percentage=Decimal(
-                market_data["maker_discount_percentage"]
-            ),  # noqa: E501
+                market_data["maker_discount_percentage"],
+            ),
         )
         return market
 
     @classmethod
-    def get_all_markets(cls):
+    def get_all_markets(cls) -> list:
         """
-        Retrieves a list with all markets from Buda.com API
+        Retrieves all markets available on Buda.com API.
 
-        :return: A list of `Market` objects
+        :returns: A list of markets.
+        :rtype: list[Market]
         """
         endpoint = "/markets"
         markets = []
@@ -96,11 +116,11 @@ class Market(models.Model):
 
 class Ticker(models.Model):
     """
-    `Ticker` object that stores all data returned from
-    `/markets/{market_id}/ticker` endpoint.
+    A class that stores all data returned from
+    `/markets/{market_id}/ticker` Buda.com API endpoint.
 
-    To initialize:
-    :param market_id: valid market identifier, e.g. `btc-clp`
+    USAGE
+    >>> ticker = Ticker.create(market_id: str)
     """
 
     market_id = models.CharField(max_length=30)
@@ -128,6 +148,12 @@ class Ticker(models.Model):
 
     @classmethod
     def create(cls, market_id: str):
+        """
+        Custom method to initialize a :class:`Ticker` instance.
+
+        :param str market_id: valid market identifier, e.g. `btc-clp`.
+        :rtype: Ticker
+        """
         # retrieve the ticket for the specific market
         endpoint = f"/markets/{market_id}/ticker"
         ticker_data = fetch_data(endpoint)["ticker"]  # TODO: ?
@@ -157,10 +183,10 @@ class Ticker(models.Model):
 
 class Spread(models.Model):
     """
-    `Spread` object that calculates the current spread of a given market.
+    A class that calculates the current spread of a given market.
 
-    To initialize:
-    :param market_id: valid market identifier, e.g. `btc-clp`
+    USAGE
+    >>> spread = Spread.create(market_id: str)
     """
 
     market_id = models.CharField(max_length=30)
@@ -170,6 +196,12 @@ class Spread(models.Model):
 
     @classmethod
     def create(cls, market_id: str):
+        """
+        Custom method to initialize a :class:`Spread` instance.
+
+        :param str market_id: valid market identifier, e.g. `btc-clp`.
+        :rtype: Spread
+        """
         # get the ticker for the given market
         ticker = Ticker.create(market_id)
 
@@ -183,6 +215,12 @@ class Spread(models.Model):
 
     @classmethod
     def get_each_markets_spread(cls) -> list:
+        """
+        Calculates the spread for all markets available on Buda.com API.
+
+        :returns: A list of spreads.
+        :rtype: list[Spread]
+        """
         spreads = []
         markets = Market.get_all_markets()
         for market in markets:
@@ -192,10 +230,11 @@ class Spread(models.Model):
 
 class Polling(models.Model):
     """
-    `Polling` object to compare the current spread with a given one.
+    A class that represent a comparison between
+    the current and a stored spread of a market.
 
-    To initialize:
-    :param stored: a `Spread` object to compare with the current spread
+    USAGE
+    >>> polling = Polling.create(stored: Spread)
     """
 
     market_id = models.CharField(max_length=30)
@@ -225,6 +264,13 @@ class Polling(models.Model):
 
     @classmethod
     def create(cls, stored: Spread):
+        """
+        Custom method to initialize a :class:`Polling` instance.
+
+        :param Spread stored: a spread already calculated
+        to compare with the current one.
+        :rtype: Polling
+        """
         # retrieve the current spread for the same market of the given one
         current = Spread.create(stored.market_id)
 
