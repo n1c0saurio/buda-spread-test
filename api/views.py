@@ -15,6 +15,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiParameter,
+    OpenApiRequest,
     OpenApiExample,
 )
 
@@ -102,7 +103,7 @@ class SpreadViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Save a spread",
+        summary="Save the current spread",
         responses={201: SpreadSerializerFull},
         parameters=[
             OpenApiParameter(
@@ -148,6 +149,58 @@ class SpreadViewSet(viewsets.ViewSet):
                 {"message": "Can't retrieve the data to calculate the spread"},
                 e.response.status_code,
             )
+        except DatabaseError:
+            return Response(
+                {"message": "Can't save the spread on database"},
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        return Response(serializer.data, status.HTTP_201_CREATED)
+
+    @extend_schema(
+        summary="Save a custom spread",
+        responses={201: SpreadSerializerFull},
+        request={
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "market_id": {
+                        "description": "ID of the market",
+                        "type": "string",
+                    },
+                    "value": {
+                        "description": "Value of the Spread",
+                        "type": "Decimal",
+                    },
+                    "currency": {
+                        "description": "Corresponding currency of the value",
+                        "type": "string",
+                    },
+                },
+            },
+        },
+        examples=[
+            OpenApiExample(
+                "Example 1",
+                summary="The full spread object stored in database",
+                value={
+                    "id": 26,
+                    "market_id": "BTC-CLP",
+                    "value": 1000.0,
+                    "currency": "CLP",
+                    "fetch_date": "2024-02-19T16:35:13Z",
+                },
+            ),
+        ],
+    )
+    @action(detail=False, methods=["post"])
+    def make(self, request):
+        """
+        Save a Spread with a user defined values.
+        """
+        try:
+            spread = Spread.make(request.data)
+            spread.save()
+            serializer = SpreadSerializerFull(spread)
         except DatabaseError:
             return Response(
                 {"message": "Can't save the spread on database"},

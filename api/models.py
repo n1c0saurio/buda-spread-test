@@ -183,10 +183,11 @@ class Ticker(models.Model):
 
 class Spread(models.Model):
     """
-    A class that calculates the current spread of a given market.
+    A class that creates a spread of a given market.
 
     USAGE
     >>> spread = Spread.create(market_id: str)
+    >>> spread = Spread.make(values: dict)
     """
 
     market_id = models.CharField(max_length=30)
@@ -197,7 +198,8 @@ class Spread(models.Model):
     @classmethod
     def create(cls, market_id: str):
         """
-        Custom method to initialize a :class:`Spread` instance.
+        Custom method to initialize a :class:`Spread` instance,
+        calculating the current spread of a given market.
 
         :param str market_id: valid market identifier, e.g. `btc-clp`.
         :rtype: Spread
@@ -210,6 +212,22 @@ class Spread(models.Model):
             market_id=ticker.market_id,
             value=ticker.min_ask_value - ticker.max_bid_value,
             currency=ticker.max_bid_currency,
+        )
+        return spread
+    
+    @classmethod
+    def make(cls, spread_data: dict):
+        """
+        Custom method to initialize a :class:`Spread` instance,
+        with given values.
+
+        :param dict spread_data: already populated with all required
+        data to initialize the object
+        """
+        spread = cls(
+            market_id=spread_data["market_id"],
+            value=spread_data["value"],
+            currency=spread_data["currency"],
         )
         return spread
 
